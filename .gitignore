@@ -53,3 +53,12 @@ htmlcov/
 # Build artifacts
 *.whl
 *.tar.gz
+
+# Session files (internal planning, not for public repo)
+PARALLEL_SESSIONS.md
+BACKGROUND_QUEUE.md
+CURRENT_TASK.md
+TASK_PROGRESS.md
+CONTEXT_SUMMARY.md
+VALIDATION_STATE.md
+.parallel_*.txt
