@@ -4,7 +4,7 @@
 
 Zero-dependency Python CLI that analyzes your project and generates a complete `.claude/` configuration with project-specific CLAUDE.md, hooks, commands, and development workflows.
 
-[![Tests](https://github.com/YOUR_USER/claudex/actions/workflows/test.yml/badge.svg)](https://github.com/YOUR_USER/claudex/actions/workflows/test.yml)
+[![Tests](https://github.com/Binx808/claudex/actions/workflows/test.yml/badge.svg)](https://github.com/Binx808/claudex/actions/workflows/test.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
