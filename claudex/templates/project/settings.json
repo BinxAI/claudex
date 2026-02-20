@@ -31,6 +31,16 @@
             "timeout": 60
           }
         ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/token-budget.py",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "PostToolUse": [

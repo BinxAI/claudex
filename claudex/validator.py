@@ -15,6 +15,7 @@ REQUIRED_FILES = [
     "hooks/pre-compact.py",
     "hooks/stop-lint-check.py",
     "hooks/session-end.py",
+    "hooks/token-budget.py",
 ]
 
 
