@@ -122,6 +122,52 @@ def patch_lint_hook(claude_dir: Path, profile: ProjectProfile) -> None:
     lint_hook.write_text(content, encoding="utf-8")
 
 
+def patch_layer_config(claude_dir: Path, preset_name: str) -> None:
+    """Patch pre-tool-use.py with stack-appropriate LAYER_CONFIG and SIBLING_BLOCKS.
+
+    Writes real enforcement rules based on the detected preset so that
+    architecture layer checking is active immediately after claudex init.
+    Does nothing if pre-tool-use.py does not exist or preset is 'generic'.
+    """
+    from claudex.layer_configs import get_preset
+
+    hook = claude_dir / "hooks" / "pre-tool-use.py"
+    if not hook.exists():
+        return
+
+    cfg = get_preset(preset_name)
+    layer_config = cfg["layer_config"]
+    sibling_blocks = cfg["sibling_blocks"]
+    layer_file_blocks = cfg["layer_file_blocks"]
+
+    # Nothing to write for generic preset — leave commented examples in place
+    if not layer_config and not sibling_blocks and not layer_file_blocks:
+        return
+
+    content = hook.read_text(encoding="utf-8")
+
+    content = content.replace(
+        "LAYER_CONFIG = {\n"
+        '    # "src/core/": ["sqlalchemy", "redis", "httpx", "fastapi"],\n'
+        '    # "src/db/": [],  # db can import anything below it\n'
+        "}",
+        f"LAYER_CONFIG = {layer_config!r}",
+    )
+    content = content.replace(
+        'LAYER_FILE_BLOCKS = {\n    # "src/core/": ["llm", "openai", "anthropic", "client"],\n}',
+        f"LAYER_FILE_BLOCKS = {layer_file_blocks!r}",
+    )
+    content = content.replace(
+        "SIBLING_BLOCKS = {\n"
+        '    # "src/worker/": ["from src.api"],\n'
+        '    # "src/db/": ["from src.worker", "from src.api"],\n'
+        "}",
+        f"SIBLING_BLOCKS = {sibling_blocks!r}",
+    )
+
+    hook.write_text(content, encoding="utf-8")
+
+
 def patch_lint_hook_from_preset(claude_dir: Path, preset_config: dict) -> None:
     """Patch stop-lint-check.py from preset config (legacy support)."""
     lint_hook = claude_dir / "hooks" / "stop-lint-check.py"

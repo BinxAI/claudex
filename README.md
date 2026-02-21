@@ -1,373 +1,319 @@
-# Claudex
+# claudex (binxai-claudex)
 
 > **Set up Claude Code for any project in one command**
 
-Zero-dependency Python CLI that analyzes your project and generates a complete `.claude/` configuration with project-specific CLAUDE.md, hooks, commands, and development workflows.
+Python CLI that analyzes your project and installs a complete `.claude/` configuration:
+project-specific CLAUDE.md, enforcement hooks, slash commands, and a full multi-agent layer.
 
-[![Tests](https://github.com/Binx808/claudex/actions/workflows/test.yml/badge.svg)](https://github.com/Binx808/claudex/actions/workflows/test.yml)
+[![CI](https://github.com/BinxAI/claudex/actions/workflows/ci.yml/badge.svg)](https://github.com/BinxAI/claudex/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/binxai-claudex.svg)](https://pypi.org/project/binxai-claudex/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
----
-
-## Features
-
-✨ **Smart Detection** - Analyzes your project (pyproject.toml, package.json, directory structure) to detect:
-- Language (Python, TypeScript, JavaScript)
-- Framework (FastAPI, Django, Flask, Next.js, React, Vue)
-- Package manager (uv, poetry, pip, npm, pnpm, yarn)
-- Database (PostgreSQL, MySQL, MongoDB, SQLite)
-- Infrastructure (Docker, CI, Git)
-
-📝 **Generated CLAUDE.md** - Uses **actual project data** (not templates):
-- Real directory tree from your project
-- Quick start commands for your package manager
-- Framework-specific testing strategies
-- Layer rules tailored to your architecture
-
-🎯 **Auto-Preset Selection** - Detects your stack and chooses the best preset:
-- `python-fastapi` for FastAPI projects
-- `python-django` for Django projects
-- `nextjs` for Next.js projects
-- `generic` fallback for everything else
-
-🔒 **Security Built-In** - Path traversal protection, never commits secrets
 
 ---
 
 ## Installation
 
 ```bash
-# Install from source (for now)
-cd /path/to/claudex
-pip install -e .
-
-# Or build and install wheel
-python -m build
-pip install dist/claudex-1.0.0-*.whl
+pip install binxai-claudex
 ```
 
-**Coming soon**: `pip install claudex` (PyPI)
-
-**Windows Note**: If `pip install` completes but the `claudex` command isn't found, you have three options:
-1. Use `python -m claudex` instead of `claudex` for all commands
-2. Use the provided `claudex.bat` wrapper script
-3. Add your Python Scripts directory to PATH
+**Windows note**: If the `claudex` command isn't found after install, run `python -m claudex` or add your Python Scripts directory to PATH.
 
 ---
 
 ## Quick Start
 
 ```bash
-# Initialize a new project
+# Standard setup (auto-detects stack)
 claudex init /path/to/project --yes
 
-# See what would be detected first
+# With multi-agent layer (orchestrator + 12 specialist agents)
+claudex init /path/to/project --yes --multi-agent
+
+# See what would be detected without making changes
 claudex info /path/to/project
 
-# Update an existing .claude/ setup (preserves user files)
+# Update templates without regenerating CLAUDE.md
 claudex update /path/to/project
 
-# Validate your .claude/ setup
+# Health check an existing .claude/ setup
 claudex validate /path/to/project
-
-# List available presets
-claudex presets
 ```
 
 ---
 
-## Commands
+## Why Multi-Agent?
+
+Each context handoff between agents carries a ~5% degradation risk in quality and context fidelity.
+Across a 10-agent pipeline: **0.95^10 = 60% effective throughput**.
+
+ClaudeX's `--multi-agent` layer addresses this with a **structured Context Handoff Protocol** — a
+machine-readable format that passes task state, decisions, file ownership, and done conditions
+between agents. Every handoff is explicit, auditable, and zero-ambiguity.
+
+---
+
+## Features
+
+### Smart Detection
+
+Analyzes your project to detect:
+
+- Language (Python, TypeScript, JavaScript)
+- Framework (FastAPI, Django, Flask, Next.js, React, Vue)
+- Package manager (uv, poetry, pip, npm, pnpm, yarn)
+- Database (PostgreSQL, MySQL, MongoDB, SQLite)
+- Infrastructure (Docker, CI, Git)
+
+### Architecture Enforcement (Stack-Aware)
+
+`claudex init` writes real layer enforcement rules into `pre-tool-use.py` based on your detected stack.
+
+**Python / FastAPI:**
+
+```python
+LAYER_CONFIG = {
+    "src/core/": ["sqlalchemy", "fastapi", "redis", "httpx"],  # no framework imports
+    "src/db/":   [],                                            # can import core
+    "src/api/":  [],                                            # can import core + db
+}
+SIBLING_BLOCKS = {
+    "src/core/":   ["from src.db", "from src.api", "from src.worker"],
+    "src/worker/": ["from src.api"],
+}
+```
+
+**Next.js:**
+
+```python
+LAYER_CONFIG = {
+    "src/lib/":        ["react"],           # lib must not import components
+    "src/components/": ["next/server"],     # components must not use server APIs
+}
+```
+
+Rules are enforced on every `Write`/`Edit` tool call — violations are blocked before they land.
+
+### Generated CLAUDE.md
+
+Uses **actual project data** (not generic templates):
+
+- Real directory tree from your project
+- Quick-start commands for your package manager
+- Framework-specific testing strategies
+- Layer rules tailored to your architecture
+
+### Multi-Agent Layer (`--multi-agent`)
+
+Installs a complete agent coordination system:
+
+```text
+.claude/agents/
+  orchestrator.md          — routes tasks to the right specialist automatically
+  implementers.yml         — role registry (source of truth)
+  verifiers.yml            — verifier registry
+  api-engineer.md          — compiled from registry
+  database-engineer.md
+  ui-designer.md
+  testing-engineer.md
+  devops-engineer.md
+  security-engineer.md
+  data-engineer.md
+  docs-engineer.md
+  architecture-verifier.md
+  security-verifier.md
+  quality-verifier.md
+  test-verifier.md
+
+.claude/commands/
+  /orchestrate             — route any task to correct specialist, no manual selection
+  /new-spec                — create a spec from a task description
+  /create-spec             — turn a rough idea into a structured spec
+  /implement-spec          — 5-phase: plan → handoff → implement → verify → close
+  /context-handoff         — structured agent-to-agent context transfer
+```
+
+### Hooks (Installed Automatically)
+
+| Hook | Trigger | Purpose |
+| ---- | ------- | ------- |
+| `pre-tool-use.py` | Before Write/Edit | Layer enforcement, file size limits |
+| `post-tool-use.py` | After Write/Edit | Architecture rule audit |
+| `session-start.py` | Session open | Load CURRENT_TASK.md, show parallel sessions |
+| `session-end.py` | Session close | Harvest memory → MEMORY.md |
+| `pre-compact.py` | Before compaction | Extract state → PRE_COMPACT_SNAPSHOT.md |
+| `token-budget.py` | Before any tool | Track token spend → TOKEN_LOG.md |
+| `stop-lint-check.py` | On /stop | Run lint + format before Claude exits |
+
+### Auto-Preset Selection
+
+| Detected Stack | Preset |
+| -------------- | ------ |
+| FastAPI + SQLAlchemy | `python-fastapi` |
+| Django + DRF | `python-django` |
+| Next.js + TypeScript | `nextjs` |
+| Anything else | `generic` |
+
+---
+
+## Commands Reference
 
 ### `claudex init [DIR]`
 
-Initialize .claude/ configuration for a project.
+Initialize `.claude/` for a project.
 
-**Options**:
-- `--preset <name>` - Override auto-detection (python-fastapi, python-django, nextjs, generic)
-- `--yes` - Skip confirmation prompt
-- `--force` - Overwrite existing .claude/
-- `--global` - Also install ~/.claude/ global config
+**Options:**
 
-**Example**:
-```bash
-# Auto-detect and initialize
-cd my-fastapi-project
-claudex init . --yes
+- `--preset <name>` — Override auto-detection
+- `--yes` — Skip confirmation
+- `--force` — Overwrite existing `.claude/`
+- `--global` — Also install `~/.claude/` global config
+- `--multi-agent` — Install orchestrator + 12 specialist agent files
+- `--dry-run` — Preview without writing
 
-# Override preset
-claudex init /path/to/django-app --preset python-django
+**What it creates:**
 
-# Full setup: global + project
-claudex init . --yes --global
+```text
+.claude/
+  hooks/        — 7 Python hooks (enforcement + lifecycle)
+  commands/     — 17+ slash commands (/dev, /audit, /parallel, ...)
+  rules/        — Development guidelines (workflow, naming, testing)
+  session/      — Task persistence (CURRENT_TASK.md, TASK_PROGRESS.md, TOKEN_LOG.md, ...)
+  agents/       — [--multi-agent] orchestrator + 12 agent files + registries
+  feedback/     — Violation tracking
+  knowledge/    — 100x patterns reference
+CLAUDE.md       — Generated from your actual project structure
+.mcp.json       — MCP server config template
 ```
-
-**What it creates**:
-- `.claude/` directory with:
-  - `hooks/` - 6 Python hooks (pre/post-tool-use, session lifecycle)
-  - `commands/` - 17 slash commands (`/dev`, `/audit`, `/parallel`, etc.)
-  - `rules/` - Development guidelines (workflow, naming, testing)
-  - `session/` - Task persistence files
-  - `feedback/` - Violation tracking
-  - `knowledge/` - 100x patterns reference
-- `CLAUDE.md` - Generated from your actual project structure
-- `.mcp.json` - MCP server config template
-- Updates `.gitignore` to include `.claude/`
-
----
 
 ### `claudex update [DIR]`
 
-Update existing .claude/ files without regenerating CLAUDE.md.
+Refresh templates without overwriting user files.
 
-**Preserves**:
-- `session/CURRENT_TASK.md`
-- `session/TASK_PROGRESS.md`
-- `session/BACKGROUND_QUEUE.md`
-- `session/PARALLEL_SESSIONS.md`
-- `feedback/*` (violations, lessons, corrections)
-- `knowledge/*` (user-added knowledge files)
+**Preserved on update:**
+
+- `session/CURRENT_TASK.md`, `session/TASK_PROGRESS.md`, `session/TOKEN_LOG.md`
+- `session/BACKGROUND_QUEUE.md`, `session/PARALLEL_SESSIONS.md`
+- `feedback/*` — violations, lessons, corrections
+- `knowledge/*` — user-added knowledge files
 - `docs/*`
-
-**Example**:
-```bash
-claudex update .
-```
-
----
 
 ### `claudex validate [DIR]`
 
-Health check your .claude/ setup.
+Health check the `.claude/` setup.
 
-**Checks**:
-- `.claude/` directory exists
-- Required subdirectories present (hooks, commands, rules, session, feedback)
-- Required files present (settings.json, all hook scripts)
-- `CLAUDE.md` exists at project root
-- `.gitignore` includes `.claude/`
-- `.mcp.json` exists (warns if missing)
-
-**Example**:
-```bash
-claudex validate /path/to/project
-```
-
-**Output**:
-```
+```text
 ✓ PASS: .claude/ directory exists
 ✓ PASS: All required directories present
-✗ FAIL: Missing .claude/hooks/session-start.py
+✓ PASS: settings.json exists and hooks registered
 ✓ PASS: CLAUDE.md exists
 ✗ FAIL: .gitignore does not include .claude/
-
-Validation failed. Run 'claudex init --force' to restore.
 ```
-
----
 
 ### `claudex info [DIR]`
 
 Show detection results without making changes.
 
-**Example**:
-```bash
-claudex info /path/to/fastapi-project
-```
-
-**Output**:
-```
-Project: my-fastapi-app
-Language: python
-Framework: FastAPI
-Package manager: uv
-Python version: >=3.11
-Database: postgresql
-Redis: yes
-Docker: yes
-CI: yes
-Auto-selected preset: python-fastapi
-
-Directory tree:
-  my-fastapi-app/
-    src/
-      api/
-      core/
-      db/
-    tests/
-      unit/
-      integration/
-    client/
-```
-
----
-
 ### `claudex presets`
 
-List all available presets with descriptions.
-
-**Example**:
-```bash
-claudex presets
-```
-
-**Output**:
-```
-Available presets:
-
-python-fastapi - Python + FastAPI + SQLAlchemy + PostgreSQL
-python-django  - Python + Django + DRF + PostgreSQL
-nextjs         - Next.js + TypeScript + Tailwind + TanStack Query
-generic        - Minimal setup for any project
-```
-
----
-
-## Presets
-
-Each preset provides tailored configuration for specific stacks:
-
-### `python-fastapi`
-- **Stack**: Python + FastAPI + SQLAlchemy + PostgreSQL
-- **Architecture**: Domain/Application/Agents/Infrastructure layers
-- **Quick start**: `uv sync`, `docker-compose up -d`, `uvicorn app:app --reload`
-- **Testing**: pytest with 95% domain coverage target
-
-### `python-django`
-- **Stack**: Python + Django + Django REST Framework + PostgreSQL
-- **Architecture**: Django apps with clean separation
-- **Quick start**: `poetry install`, `python manage.py migrate`, `python manage.py runserver`
-- **Testing**: Django test framework
-
-### `nextjs`
-- **Stack**: Next.js + TypeScript + Tailwind CSS + TanStack Query
-- **Architecture**: App router with components/hooks/lib
-- **Quick start**: `pnpm install`, `pnpm dev`
-- **Testing**: Vitest + React Testing Library
-
-### `generic`
-- **Stack**: Any language/framework
-- **Architecture**: Minimal recommendations
-- **Quick start**: Auto-detected or manual
-- **Testing**: Standard coverage targets
-
----
-
-## After Setup
-
-### 1. Configure MCP (Optional)
-
-Edit `.mcp.json` to connect Claude Code to GitHub:
-
-```bash
-# Get your GitHub token
-gh auth token
-
-# Paste into .mcp.json "args" for github server
-```
-
-### 2. Start Claude Code
-
-```bash
-cd /path/to/project
-# Claude Code will auto-load .claude/ configuration
-```
-
-### 3. Begin Development
-
-```bash
-# Start your first task
-/dev start "implement user authentication"
-
-# Continue after break
-/dev continue
-
-# Complete when done
-/dev complete
-```
+List all available presets.
 
 ---
 
 ## 100x Developer Workflow
 
-The scaffold implements the **100x Developer Framework** for maximum throughput:
+The scaffold implements the **100x Developer Framework** for maximum throughput.
 
 ### Background Agents (Night Queue)
-
-Accumulate tasks during deep work, execute overnight:
 
 ```bash
 /background-queue add "Add unit tests for user service"
 /background-queue add "Fix lint warnings in api/ directory"
-/background-queue add "Update docstrings in core modules"
-/night-kick                 # Generates headless launch commands
-# Copy-paste commands, agents run overnight
-/background-queue review    # Check results next morning
+/night-kick              # generates headless launch commands
+# copy-paste, agents run overnight
+/background-queue review # check results next morning
 ```
 
 ### Parallel Sessions
 
-Split large features across multiple Claude Code sessions:
-
 ```bash
 /parallel plan "Sprint 5: Add real-time features"
-# Creates PARALLEL_SESSIONS.md with:
-# - Session table (file ownership, no overlaps)
-# - Merge order (dependency-aware)
-# - Worktree creation commands
+# Creates PARALLEL_SESSIONS.md with file ownership and merge order
 
 # Launch sessions in separate terminals
 cd ../project-session-a && /dev start ...
 cd ../project-session-b && /dev start ...
 
-/parallel status         # Check progress
-/parallel merge-order    # Get correct merge sequence
-/parallel cleanup        # Remove completed worktrees
+/parallel status         # check progress
+/parallel merge-order    # get correct merge sequence
 ```
 
-### AI Code Review
+### Multi-Agent Spec Implementation
 
-Automatically runs on every PR:
+```bash
+# Route any task automatically
+/orchestrate "add a POST /users endpoint with email validation"
 
-```yaml
-# .github/workflows/claude-code-review.yml (created by scaffold)
-- Project-specific review rules
-- Architecture compliance checks
-- Tag @claude in any PR comment for on-demand review
+# Full spec lifecycle
+/new-spec "user authentication with JWT"
+/implement-spec docs/specs/user-auth.md
+# → plans agent assignments
+# → generates context handoff docs
+# → delegates to implementers in order
+# → runs verifiers (architecture, security, quality, tests)
+# → produces final-verification.md
+```
+
+### Slash Commands
+
+| Command | Purpose |
+| ------- | ------- |
+| `/dev start <task>` | Initialize task with session files |
+| `/dev continue` | Resume after compaction |
+| `/dev checkpoint` | Save progress |
+| `/dev validate` | Run all validations |
+| `/dev complete` | Complete with full QA |
+| `/orchestrate <task>` | Auto-route to specialist agent |
+| `/implement-spec <file>` | 5-phase multi-agent implementation |
+| `/context-handoff` | Structured agent-to-agent handoff |
+| `/audit` | Code quality + security audit |
+| `/run-tests` | Execute test suite |
+| `/validate-architecture` | Check layer placement |
+| `/parallel` | Plan and manage parallel sessions |
+| `/night-kick` | Launch background agent queue |
+| `/expert-backend` | Senior backend specialist |
+| `/expert-frontend` | Senior frontend specialist |
+| `/expert-devops` | Senior DevOps specialist |
+| `/expert-qa` | Senior QA specialist |
+
+---
+
+## Development
+
+```bash
+# Install with dev dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest tests/ -v
+
+# Lint + format
+ruff check claudex/ tests/
+ruff format claudex/ tests/
 ```
 
 ---
 
-## Slash Commands Reference
+## Requirements
 
-| Command | Purpose |
-|---------|---------|
-| `/dev start <task>` | Initialize new task with session files |
-| `/dev continue` | Resume from session files after compaction |
-| `/dev checkpoint` | Save progress to disk |
-| `/dev validate` | Run all validations |
-| `/dev complete` | Complete task with full QA |
-| `/audit` | Code quality and security audit |
-| `/run-tests` | Execute test suite with reporting |
-| `/validate-architecture` | Check layer placement and dependencies |
-| `/validate-consistency` | Cross-layer schema/type/enum check |
-| `/background-queue` | Manage background agent task queue |
-| `/night-kick` | Launch queued background agents |
-| `/parallel` | Plan and manage parallel sessions |
-| `/report-violation` | Log and track workflow violations |
-| `/improve-workflow` | Analyze feedback and propose improvements |
-| `/expert-*` | Consult specialized subagents |
+- Python 3.11+
+- `pyyaml>=6.0` (installed automatically)
+- Git (for parallel session worktree support)
 
 ---
 
 ## Customization
-
-### Modify Detection Logic
-
-Edit `claudex/detectors.py`:
-- `PYTHON_FRAMEWORKS` - Add new Python frameworks
-- `JS_FRAMEWORKS` - Add new JavaScript frameworks
-- `DB_INDICATORS` - Add database detection patterns
 
 ### Add New Presets
 
@@ -382,128 +328,34 @@ architecture_tree: |
     tests/
 layer_description: |
   - **src/**: Application code
-  - **tests/**: Test suite
 layer_rules:
-  - Domain layer: Pure business logic
-  - Application layer: Use cases
+  - Core layer: pure business logic
 quick_start: |
-  npm install
-  npm run dev
+  npm install && npm run dev
 ```
 
 ### Modify Templates
 
 Edit files in `claudex/templates/project/`:
-- `hooks/` - Customize Python hooks
-- `commands/` - Add new slash commands
-- `rules/` - Modify development guidelines
 
----
-
-## Development
-
-### Running Tests
-
-```bash
-# Install dev dependencies
-pip install -e .
-pip install pytest
-
-# Run all tests
-pytest tests/ -v
-
-# Run specific test file
-pytest tests/test_detectors.py -v
-
-# Run with coverage
-pytest tests/ --cov=claudex --cov-report=html
-```
-
-### Running CI Locally
-
-```bash
-# Lint
-ruff check claudex/ tests/
-
-# Format check
-ruff format claudex/ tests/ --check
-
-# Auto-fix
-ruff check claudex/ tests/ --fix
-ruff format claudex/ tests/
-```
-
----
-
-## Troubleshooting
-
-### Issue: Detection fails on Windows
-
-**Symptom**: Unicode errors when printing directory tree
-
-**Fix**: Unicode encoding is handled internally with fallback to ASCII. If you still see errors, set:
-```bash
-set PYTHONIOENCODING=utf-8
-```
-
-### Issue: Templates not found after pip install
-
-**Symptom**: `FileNotFoundError: templates/project/`
-
-**Fix**: Templates are inside the package. If using editable install (`pip install -e .`), ensure you're in the repo directory. For normal install, templates resolve via `__file__`.
-
-### Issue: Can't detect my framework
-
-**Symptom**: Auto-selects `generic` preset when it should detect FastAPI/Django/Next.js
-
-**Fix**: Check your dependencies:
-- **Python**: Must be in `pyproject.toml` `[project.dependencies]` or `[tool.poetry.dependencies]`
-- **JavaScript**: Must be in `package.json` `dependencies` (not `devDependencies`)
-
-### Issue: CLAUDE.md not project-specific
-
-**Symptom**: Generated CLAUDE.md has generic architecture tree
-
-**Fix**: Detection couldn't find source directories. Ensure:
-- Python: `src/` or `app/` directory with `.py` files
-- JavaScript: `src/` or `app/` directory with `.ts`/`.tsx`/`.js` files
-
----
-
-## Requirements
-
-- Python 3.11+ (for `tomllib` stdlib)
-- No external dependencies (stdlib only)
-- Git (for worktree support in parallel sessions)
-
----
-
-## License
-
-MIT License - see [LICENSE](LICENSE)
-
----
-
-## Contributing
-
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass (`pytest tests/`)
-5. Submit a pull request
+- `hooks/` — customize Python hooks
+- `commands/` — add slash commands
+- `rules/` — modify development guidelines
+- `agents/` — edit agent role definitions
 
 ---
 
 ## Roadmap
 
-- [ ] Publish to PyPI
+- [x] Publish to PyPI (`pip install binxai-claudex`)
+- [x] Multi-agent layer (`--multi-agent` flag)
+- [x] Agent file compilation (YAML registries → individual agent .md files)
+- [x] Stack-aware LAYER_CONFIG (architecture enforcement on init)
 - [ ] Add more presets (Flask, Express, Vue, Svelte)
 - [ ] Preset inheritance (`extends:` in YAML)
-- [ ] Detection confidence scores
-- [ ] `preview` command (show what would be generated)
+- [ ] `preview` command (show what CLAUDE.md would look like)
 - [ ] Monorepo support (detect sub-projects)
 
 ---
 
-**Made for Claude Code** - Anthropic's official CLI for Claude
+**Made for Claude Code** — Anthropic's official CLI for Claude.
