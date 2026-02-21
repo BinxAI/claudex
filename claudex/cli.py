@@ -162,6 +162,12 @@ def _init_project_files(target: Path, profile, dry_run: bool) -> None:
     if not dry_run:
         patch_lint_hook(claude_dir, profile)
 
+    # Patch layer config from detected preset
+    if not dry_run:
+        from claudex.copier import patch_layer_config
+
+        patch_layer_config(claude_dir, profile.preset_selected)
+
     # Add .claude/ to .gitignore
     if not dry_run:
         ensure_gitignore(target)
