@@ -36,14 +36,21 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.8",
+]
+
 [project.scripts]
 claudex = "claudex.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/Binx808/claudex"
-Repository = "https://github.com/Binx808/claudex"
-Issues = "https://github.com/Binx808/claudex/issues"
-Documentation = "https://github.com/Binx808/claudex#readme"
+Homepage = "https://github.com/BinxAI/claudex"
+Repository = "https://github.com/BinxAI/claudex"
+Issues = "https://github.com/BinxAI/claudex/issues"
+Documentation = "https://github.com/BinxAI/claudex#readme"
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]

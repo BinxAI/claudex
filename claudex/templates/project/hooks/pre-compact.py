@@ -5,7 +5,7 @@ Saves session state so progress survives compaction.
 """
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -29,7 +29,7 @@ def auto_checkpoint():
     if not current_task.exists():
         return {"status": "skip"}
 
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
 
     progress_file = session_dir / "TASK_PROGRESS.md"
     if progress_file.exists():

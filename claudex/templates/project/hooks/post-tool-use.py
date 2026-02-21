@@ -8,11 +8,10 @@ Customize LAYER_RULES to match your project's architecture.
 """
 
 import json
-import sys
 import re
-from pathlib import Path
+import sys
 from datetime import datetime
-
+from pathlib import Path
 
 # === CUSTOMIZE THIS FOR YOUR PROJECT ===
 # Map layer paths to forbidden imports
@@ -64,7 +63,7 @@ def log_violation(violation_type: str, file_path: str, message: str, severity: s
 **Root Cause**:
 Auto-detected by post-tool-use hook
 
-**Tags**: #auto-detected #{violation_type.lower().replace(' ', '-')}
+**Tags**: #auto-detected #{violation_type.lower().replace(" ", "-")}
 """
 
         with open(log_file, "a", encoding="utf-8") as f:
@@ -84,30 +83,41 @@ def check_for_violations(file_path: str, content: str) -> list:
 
         for lib in rules.get("forbidden_imports", []):
             if f"import {lib}" in content or f"from {lib}" in content:
-                violations.append({
-                    "type": "Architecture",
-                    "severity": "CRITICAL",
-                    "message": f"Layer '{layer_path}' imports forbidden library '{lib}'."
-                })
+                violations.append(
+                    {
+                        "type": "Architecture",
+                        "severity": "CRITICAL",
+                        "message": f"Layer '{layer_path}' imports forbidden library '{lib}'.",
+                    }
+                )
 
         for pattern in rules.get("no_import_from", []):
             if pattern in content:
-                violations.append({
-                    "type": "Architecture",
-                    "severity": "HIGH",
-                    "message": f"Layer '{layer_path}' has forbidden import pattern: '{pattern}'."
-                })
+                violations.append(
+                    {
+                        "type": "Architecture",
+                        "severity": "HIGH",
+                        "message": (
+                            f"Layer '{layer_path}' has forbidden import pattern: '{pattern}'."
+                        ),
+                    }
+                )
 
     # Hardcoded secrets check (all layers)
     secret_patterns = ["api_key=", "password=", "secret=", "token="]
     for pattern in secret_patterns:
         if pattern in content.lower():
             if "os.getenv" not in content and "os.environ" not in content:
-                violations.append({
-                    "type": "Security",
-                    "severity": "CRITICAL",
-                    "message": f"Possible hardcoded secret detected ('{pattern}'). Use environment variables."
-                })
+                violations.append(
+                    {
+                        "type": "Security",
+                        "severity": "CRITICAL",
+                        "message": (
+                            f"Possible hardcoded secret detected ('{pattern}')."
+                            " Use environment variables."
+                        ),
+                    }
+                )
 
     return violations
 

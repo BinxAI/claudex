@@ -3,7 +3,7 @@
 
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -29,7 +29,7 @@ def main():
             except Exception:
                 pass
 
-            now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+            now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
             content = progress_file.read_text(encoding="utf-8")
             marker = f"\n\n---\n_Session ended: {now} (reason: {reason})_\n"
             progress_file.write_text(content + marker, encoding="utf-8")

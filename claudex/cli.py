@@ -152,7 +152,7 @@ def _init_project_files(target: Path, profile, dry_run: bool) -> None:
         if not dry_run:
             content = mcp_template.read_text(encoding="utf-8")
             mcp_dest.write_text(content, encoding="utf-8")
-            print(f"  CREATE: .mcp.json")
+            print("  CREATE: .mcp.json")
         else:
             print(f"  CREATE: {mcp_dest}")
     elif mcp_dest.exists():
@@ -205,6 +205,7 @@ def cmd_init(args: argparse.Namespace) -> int:
     # Global config
     if args.setup_global:
         from claudex.copier import setup_global
+
         setup_global(dry_run=args.dry_run)
 
     print(f"\n  Done! .claude/ configured with '{profile.preset_selected}' preset.")
@@ -287,7 +288,7 @@ def cmd_info(args: argparse.Namespace) -> int:
         print(f"  Entry points:    {', '.join(profile.entry_points)}")
 
     if profile.directory_tree:
-        print(f"\n  Directory tree:\n")
+        print("\n  Directory tree:\n")
         for line in profile.directory_tree.splitlines():
             # Handle Windows console encoding
             try:
@@ -331,8 +332,12 @@ def main() -> None:
     p_init.add_argument("--dry-run", action="store_true", help="Preview without writing files")
 
     # update
-    p_update = subparsers.add_parser("update", help="Update .claude/ templates (preserve user files)")
-    p_update.add_argument("directory", nargs="?", default=".", help="Project directory (default: .)")
+    p_update = subparsers.add_parser(
+        "update", help="Update .claude/ templates (preserve user files)"
+    )
+    p_update.add_argument(
+        "directory", nargs="?", default=".", help="Project directory (default: .)"
+    )
     p_update.add_argument("--dry-run", action="store_true", help="Preview without writing files")
 
     # validate

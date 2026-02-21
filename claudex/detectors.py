@@ -4,7 +4,6 @@ Analyzes existing projects to build a ProjectProfile without user input.
 """
 
 import json
-import os
 import tomllib
 from pathlib import Path
 
@@ -342,7 +341,15 @@ def _detect_entry_points(path: Path, profile: ProjectProfile) -> None:
     """Detect entry point files."""
     entry_points = []
 
-    candidates = ["main.py", "app.py", "manage.py", "index.ts", "index.js", "server.ts", "server.js"]
+    candidates = [
+        "main.py",
+        "app.py",
+        "manage.py",
+        "index.ts",
+        "index.js",
+        "server.ts",
+        "server.js",
+    ]
 
     for candidate in candidates:
         if (path / candidate).exists():

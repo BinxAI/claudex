@@ -1,0 +1,55 @@
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  validate-title:
+    name: Validate PR title (conventional commits)
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    steps:
+      - name: Check PR title format
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "Checking PR title: $PR_TITLE"
+
+          # Must match: type(scope): description  OR  type: description
+          # Types: feat, fix, refactor, test, docs, chore, perf, style
+          # Description: 1-72 chars
+          PATTERN='^(feat|fix|refactor|test|docs|chore|perf|style)(\(.+\))?: .{1,72}$'
+
+          if echo "$PR_TITLE" | grep -qE "$PATTERN"; then
+            echo "✅ PR title is valid conventional commit format"
+          else
+            echo ""
+            echo "❌ PR title must follow conventional commits format:"
+            echo "   <type>(<scope>): <description>"
+            echo ""
+            echo "   Valid types: feat, fix, refactor, test, docs, chore, perf, style"
+            echo "   Scope is optional. Description max 72 chars."
+            echo ""
+            echo "   Examples:"
+            echo "   feat(cli): add --multi-agent flag to claudex init"
+            echo "   fix(ci): use correct package name in ruff check"
+            echo "   docs: update README with multi-agent setup guide"
+            echo "   chore: bump version to 1.1.0"
+            exit 1
+          fi
+
+  auto-label:
+    name: Auto-label PR by files changed
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          sync-labels: true

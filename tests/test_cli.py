@@ -1,15 +1,12 @@
 """Integration tests for CLI commands."""
-from pathlib import Path
-import tempfile
+
 import shutil
-import subprocess
-import sys
+import tempfile
+from pathlib import Path
 
 import pytest
 
-from claudex.cli import main
 from claudex.detectors import detect_project
-
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -81,7 +78,6 @@ class TestInitCommand:
         """Test that init creates .claude/ structure."""
         # This would normally use CLI, but we test the logic
         from claudex.copier import copy_tree
-        from claudex import templates
 
         templates_dir = Path(__file__).parent.parent / "claudex" / "templates" / "project"
         claude_dir = temp_project / ".claude"
@@ -97,14 +93,10 @@ class TestInitCommand:
 
     def test_init_creates_claude_md(self, temp_project):
         """Test that init generates CLAUDE.md."""
-        from claudex.generator import generate_claude_md
         from claudex.detectors import ProjectProfile
+        from claudex.generator import generate_claude_md
 
-        profile = ProjectProfile(
-            name="test-project",
-            language="python",
-            framework="FastAPI"
-        )
+        profile = ProjectProfile(name="test-project", language="python", framework="FastAPI")
 
         claude_md = generate_claude_md(profile, {})
         (temp_project / "CLAUDE.md").write_text(claude_md)
@@ -128,7 +120,7 @@ class TestValidateCommand:
 
     def test_validate_passes_on_complete_setup(self, temp_project):
         """Test validate command on complete setup."""
-        from claudex.validator import validate_project, REQUIRED_DIRS, REQUIRED_FILES
+        from claudex.validator import REQUIRED_DIRS, REQUIRED_FILES, validate_project
 
         # Create complete .claude/ setup
         claude_dir = temp_project / ".claude"
@@ -189,10 +181,10 @@ class TestEndToEndWorkflow:
 
     def test_full_workflow_on_fastapi_fixture(self, temp_project):
         """Test full workflow on FastAPI project."""
+        from claudex.copier import copy_tree, ensure_gitignore
         from claudex.detectors import detect_project
         from claudex.generator import generate_claude_md
         from claudex.validator import validate_project
-        from claudex.copier import copy_tree, ensure_gitignore
 
         # 1. Detect
         fastapi_path = FIXTURES / "fastapi_project"

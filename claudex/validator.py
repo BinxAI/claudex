@@ -26,9 +26,7 @@ def validate_project(path: Path) -> tuple[list[str], list[str]]:
     # Check .claude/ exists
     claude_dir = path / ".claude"
     if not claude_dir.exists():
-        failures.append(
-            "'.claude/' directory not found - run 'claudex init' to create it"
-        )
+        failures.append("'.claude/' directory not found - run 'claudex init' to create it")
         return passes, failures
 
     passes.append("'.claude/' directory exists")
@@ -39,9 +37,7 @@ def validate_project(path: Path) -> tuple[list[str], list[str]]:
         if subdir.exists():
             passes.append(f"'.claude/{dirname}/' exists")
         else:
-            failures.append(
-                f"Missing '.claude/{dirname}/' - run 'claudex init --force' to restore"
-            )
+            failures.append(f"Missing '.claude/{dirname}/' - run 'claudex init --force' to restore")
 
     # Check required files
     for filepath in REQUIRED_FILES:
@@ -49,9 +45,7 @@ def validate_project(path: Path) -> tuple[list[str], list[str]]:
         if file.exists():
             passes.append(f"'.claude/{filepath}' exists")
         else:
-            failures.append(
-                f"Missing '.claude/{filepath}' - run 'claudex init --force' to restore"
-            )
+            failures.append(f"Missing '.claude/{filepath}' - run 'claudex init --force' to restore")
 
     # Check CLAUDE.md at project root
     claude_md = path / "CLAUDE.md"
@@ -67,11 +61,11 @@ def validate_project(path: Path) -> tuple[list[str], list[str]]:
     if gitignore.exists():
         content = gitignore.read_text(encoding="utf-8")
         if ".claude/" in content:
-            passes.append("'.gitignore' contains '.claude/'"
-)
+            passes.append("'.gitignore' contains '.claude/'")
         else:
             failures.append(
-                "'.gitignore' missing '.claude/' entry - add it manually or run 'claudex init --force'"
+                "'.gitignore' missing '.claude/' entry"
+                " - add it manually or run 'claudex init --force'"
             )
     else:
         failures.append("No '.gitignore' file - create one with '.claude/' entry")

@@ -141,9 +141,7 @@ def patch_lint_hook_from_preset(claude_dir: Path, preset_config: dict) -> None:
             if line.strip().startswith("-")
         ]
         if exts:
-            content = content.replace(
-                'LINT_EXTENSIONS = [".py"]', f"LINT_EXTENSIONS = {exts!r}"
-            )
+            content = content.replace('LINT_EXTENSIONS = [".py"]', f"LINT_EXTENSIONS = {exts!r}")
 
     lint_hook.write_text(content, encoding="utf-8")
 

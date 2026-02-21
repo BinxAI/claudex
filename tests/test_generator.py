@@ -1,14 +1,11 @@
 """Tests for CLAUDE.md generator."""
-from pathlib import Path
-
-import pytest
 
 from claudex.detectors import ProjectProfile
 from claudex.generator import (
-    generate_claude_md,
+    _section_constraints,
     _section_header,
     _section_quick_start,
-    _section_constraints,
+    generate_claude_md,
 )
 
 
@@ -16,10 +13,7 @@ class TestSectionHeader:
     """Test header section generation."""
 
     def test_generates_header_with_name_and_description(self):
-        profile = ProjectProfile(
-            name="test-app",
-            description="A test application"
-        )
+        profile = ProjectProfile(name="test-app", description="A test application")
         result = _section_header(profile)
 
         assert "# test-app" in result
@@ -37,30 +31,21 @@ class TestSectionQuickStart:
         assert "```bash" in result
 
     def test_generates_npm_commands(self):
-        profile = ProjectProfile(
-            package_manager="npm",
-            language="javascript"
-        )
+        profile = ProjectProfile(package_manager="npm", language="javascript")
         result = _section_quick_start(profile, {})
 
         assert "npm install" in result
         assert "npm run dev" in result
 
     def test_includes_docker_if_detected(self):
-        profile = ProjectProfile(
-            package_manager="poetry",
-            has_docker=True
-        )
+        profile = ProjectProfile(package_manager="poetry", has_docker=True)
         result = _section_quick_start(profile, {})
 
         assert "docker-compose up -d" in result
 
     def test_includes_django_migrations(self):
         profile = ProjectProfile(
-            framework="Django",
-            language="python",
-            has_db=True,
-            entry_points=["manage.py"]
+            framework="Django", language="python", has_db=True, entry_points=["manage.py"]
         )
         result = _section_quick_start(profile, {})
 
@@ -98,7 +83,7 @@ class TestGenerateClaudeMd:
             has_db=True,
             db_type="postgresql",
             has_docker=True,
-            directory_tree="fastapi-app/\n  src/\n  tests/"
+            directory_tree="fastapi-app/\n  src/\n  tests/",
         )
         preset_config = {"layer_description": "Test layers"}
 
@@ -123,7 +108,7 @@ class TestGenerateClaudeMd:
             framework="Next.js",
             package_manager="pnpm",
             has_db=False,
-            directory_tree="nextjs-app/\n  app/\n  components/"
+            directory_tree="nextjs-app/\n  app/\n  components/",
         )
         preset_config = {}
 
@@ -145,11 +130,7 @@ class TestGenerateClaudeMd:
         assert "Architecture" in result
 
     def test_markdown_is_valid(self):
-        profile = ProjectProfile(
-            name="test-app",
-            language="python",
-            framework="FastAPI"
-        )
+        profile = ProjectProfile(name="test-app", language="python", framework="FastAPI")
         preset_config = {}
 
         result = generate_claude_md(profile, preset_config)

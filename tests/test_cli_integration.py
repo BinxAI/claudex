@@ -1,8 +1,9 @@
 """Integration tests for claudex CLI via subprocess."""
+
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-import shutil
 
 import pytest
 

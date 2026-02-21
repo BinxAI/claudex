@@ -1,19 +1,16 @@
 """Tests for project detection engine."""
-import json
-from pathlib import Path
 
-import pytest
+from pathlib import Path
 
 from claudex.detectors import (
     ProjectProfile,
-    detect_project,
-    _detect_language,
-    _detect_python_deps,
-    _detect_js_deps,
-    _detect_package_manager,
     _detect_directories,
+    _detect_js_deps,
+    _detect_language,
+    _detect_package_manager,
+    _detect_python_deps,
+    detect_project,
 )
-
 
 # Fixture paths
 FIXTURES = Path(__file__).parent / "fixtures"

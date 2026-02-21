@@ -51,8 +51,7 @@ def check_layer_placement(file_path: str) -> tuple[bool, str]:
             for kw in blocked_names:
                 if kw in basename:
                     return False, (
-                        f"BLOCKED: Files matching '{kw}' don't belong in {layer}. "
-                        f"File: {file_path}"
+                        f"BLOCKED: Files matching '{kw}' don't belong in {layer}. File: {file_path}"
                     )
 
     return True, ""
@@ -70,9 +69,16 @@ def check_file_size(file_path: str, content: str) -> tuple[bool, str]:
         )
 
     if lines > WARN_LINES:
-        print(json.dumps({
-            "warning": f"File has {lines} lines (ideal: <={WARN_LINES}). Consider refactoring."
-        }), file=sys.stderr)
+        print(
+            json.dumps(
+                {
+                    "warning": (
+                        f"File has {lines} lines (ideal: <={WARN_LINES}). Consider refactoring."
+                    )
+                }
+            ),
+            file=sys.stderr,
+        )
 
     return True, ""
 
@@ -84,18 +90,21 @@ def check_session_exists() -> tuple[bool, str]:
 
     if not current_task.exists():
         return False, (
-            "BLOCKED: No active task. Run '/dev start <task>' first "
-            "to initialize session."
+            "BLOCKED: No active task. Run '/dev start <task>' first to initialize session."
         )
 
     try:
         import time
+
         mtime = current_task.stat().st_mtime
         age_hours = (time.time() - mtime) / 3600
         if age_hours > 48:
-            print(json.dumps({
-                "warning": f"Session is {age_hours:.0f} hours old. Consider archiving."
-            }), file=sys.stderr)
+            print(
+                json.dumps(
+                    {"warning": f"Session is {age_hours:.0f} hours old. Consider archiving."}
+                ),
+                file=sys.stderr,
+            )
     except Exception:
         pass
 
@@ -140,7 +149,7 @@ def main():
     if tool_name == "Write" and content:
         checks.append(("size", lambda: check_file_size(file_path, content)))
 
-    for check_name, check_fn in checks:
+    for _check_name, check_fn in checks:
         allowed, message = check_fn()
         if not allowed:
             print(json.dumps({"allow": False, "message": message}))

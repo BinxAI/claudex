@@ -42,7 +42,8 @@ def _section_constraints(profile: ProjectProfile) -> str:
 
     # Always include these
     constraints = [
-        "**Never commit** - `.claude/`, `.env`, `.env.*`, `*.pem`, `*.key`, `*.token`, `credentials.json`, `secrets.yaml`",
+        "**Never commit** - `.claude/`, `.env`, `.env.*`, `*.pem`, `*.key`, `*.token`,"
+        " `credentials.json`, `secrets.yaml`",
         "**Always commit tests** - Test files in `tests/` must be committed for CI",
         "**Clean git history** - No AI tool names, no Co-Authored-By AI lines in commits/PRs",
     ]
@@ -50,7 +51,9 @@ def _section_constraints(profile: ProjectProfile) -> str:
     # Add rule versioning if DB detected
     if profile.has_db:
         constraints.insert(
-            1, "**Rule versioning** - All business rules versioned, evaluations reference rule_version_id"
+            1,
+            "**Rule versioning** - All business rules versioned,"
+            " evaluations reference rule_version_id",
         )
 
     for i, constraint in enumerate(constraints, 1):
@@ -250,7 +253,7 @@ def _build_dev_server_command(profile: ProjectProfile) -> str:
                 module = ep.replace("/", ".").replace(".py", "")
                 return f"uvicorn {module}:app --reload"
             elif profile.framework == "Flask":
-                return f"flask run"
+                return "flask run"
 
     # Fallback for JS/TS
     if profile.language in ("typescript", "javascript"):

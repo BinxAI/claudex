@@ -9,7 +9,6 @@ Runs when a new session begins:
 """
 
 import json
-import sys
 import time
 from pathlib import Path
 
@@ -34,7 +33,7 @@ def check_session_state() -> dict:
         "age_hours": 0,
         "task_name": None,
         "recommendation": None,
-        "message": None
+        "message": None,
     }
 
     if not session_dir.exists() or not current_task.exists():
@@ -101,9 +100,7 @@ def check_background_queue() -> str:
                     f"- run '/background-queue review' to check results"
                 )
             else:
-                messages.append(
-                    f"BACKGROUND QUEUE: {kicked_count} agent(s) running"
-                )
+                messages.append(f"BACKGROUND QUEUE: {kicked_count} agent(s) running")
 
         if queued_count > 0:
             messages.append(
@@ -137,11 +134,19 @@ def check_parallel_sessions() -> str:
                 continue
             if in_table and line.startswith("##"):
                 break
-            if in_table and line.startswith("|") and not line.startswith("| #") and not line.startswith("| -"):
+            if (
+                in_table
+                and line.startswith("|")
+                and not line.startswith("| #")
+                and not line.startswith("| -")
+            ):
                 active_count += 1
 
         if active_count > 0:
-            return f"PARALLEL SESSIONS: {active_count} active session(s) - check PARALLEL_SESSIONS.md before editing shared files"
+            return (
+                f"PARALLEL SESSIONS: {active_count} active session(s)"
+                " - check PARALLEL_SESSIONS.md before editing shared files"
+            )
         return ""
     except Exception:
         return ""
@@ -152,7 +157,7 @@ def main():
     output = {
         "status": "ok",
         "has_active_session": state["has_session"],
-        "recommendation": state["recommendation"]
+        "recommendation": state["recommendation"],
     }
 
     # Check background queue and parallel sessions

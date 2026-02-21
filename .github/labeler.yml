@@ -1,0 +1,45 @@
+# Auto-labeler configuration for actions/labeler@v5
+# Applies labels to PRs based on files changed.
+
+hook:
+  - changed-files:
+      - any-glob-to-any-file: "claudex/templates/project/hooks/**"
+
+template:
+  - changed-files:
+      - any-glob-to-any-file: "claudex/templates/**"
+
+multi-agent:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "claudex/templates/project/agents/**"
+          - "claudex/templates/project/commands/orchestrate.md"
+          - "claudex/templates/project/commands/implement-spec.md"
+          - "claudex/templates/project/commands/context-handoff.md"
+          - "claudex/templates/project/commands/new-spec.md"
+
+command:
+  - changed-files:
+      - any-glob-to-any-file: "claudex/templates/project/commands/**"
+
+cli:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "claudex/cli.py"
+          - "claudex/copier.py"
+          - "claudex/validator.py"
+          - "claudex/detectors.py"
+
+test:
+  - changed-files:
+      - any-glob-to-any-file: "tests/**"
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file: "*.md"
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"
+          - "pyproject.toml"

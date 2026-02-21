@@ -1,11 +1,12 @@
 """Tests for .claude/ setup validator."""
-from pathlib import Path
-import tempfile
+
 import shutil
+import tempfile
+from pathlib import Path
 
 import pytest
 
-from claudex.validator import validate_project, REQUIRED_DIRS, REQUIRED_FILES
+from claudex.validator import REQUIRED_DIRS, REQUIRED_FILES, validate_project
 
 
 @pytest.fixture
