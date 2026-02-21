@@ -169,7 +169,9 @@ class TestUpdateCommand:
                 "session/BACKGROUND_QUEUE.md",
                 "session/PARALLEL_SESSIONS.md",
             }
-            copy_tree(templates_dir, claude_dir, update_mode=True, preserve_on_update=preserve_patterns)
+            copy_tree(
+                templates_dir, claude_dir, update_mode=True, preserve_on_update=preserve_patterns
+            )
 
             # Check session file was preserved
             if session_file.exists():
