@@ -168,14 +168,15 @@ def _init_project_files(target: Path, profile, dry_run: bool) -> None:
 
 
 def _init_multi_agent_files(target: Path, dry_run: bool) -> None:
-    """Copy multi-agent templates (orchestrator, role registry, spec commands)."""
+    """Copy multi-agent templates and compile YAML registries into individual agent files."""
+    from claudex.compiler import compile_implementer_agents, compile_verifier_agents
     from claudex.copier import PROJECT_TEMPLATE
 
     claude_dir = target / ".claude"
     agents_src = PROJECT_TEMPLATE / "agents"
     agents_dest = claude_dir / "agents"
 
-    multi_agent_files = [
+    registry_files = [
         (agents_src / "orchestrator.md", agents_dest / "orchestrator.md"),
         (agents_src / "implementers.yml", agents_dest / "implementers.yml"),
         (agents_src / "verifiers.yml", agents_dest / "verifiers.yml"),
@@ -187,12 +188,24 @@ def _init_multi_agent_files(target: Path, dry_run: bool) -> None:
     if not dry_run:
         agents_dest.mkdir(exist_ok=True)
 
-    for src, dest in multi_agent_files:
+    # Copy registry files (orchestrator.md + YAML registries)
+    for src, dest in registry_files:
         if src.exists():
             if not dry_run:
                 dest.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
             print(f"  CREATE: .claude/agents/{dest.name}")
 
+    # Compile YAML registries into individual agent .md files
+    if not dry_run:
+        implementer_files = compile_implementer_agents(agents_src / "implementers.yml", agents_dest)
+        verifier_files = compile_verifier_agents(agents_src / "verifiers.yml", agents_dest)
+        for fname in implementer_files + verifier_files:
+            print(f"  CREATE: .claude/agents/{fname}")
+    else:
+        print("  CREATE: .claude/agents/[8 implementer agent files] (dry run)")
+        print("  CREATE: .claude/agents/[4 verifier agent files] (dry run)")
+
+    # Copy spec/orchestration commands
     for fname in spec_commands:
         src = commands_src / fname
         dest = commands_dest / fname
@@ -202,9 +215,9 @@ def _init_multi_agent_files(target: Path, dry_run: bool) -> None:
             print(f"  CREATE: .claude/commands/{fname}")
 
     print("\n  Multi-agent layer installed:")
-    print("    .claude/agents/orchestrator.md   — route tasks automatically")
-    print("    .claude/agents/implementers.yml  — 8 implementer roles")
-    print("    .claude/agents/verifiers.yml     — 4 verifier roles")
+    print("    .claude/agents/orchestrator.md      — route tasks automatically")
+    print("    .claude/agents/[8 implementers]     — api, db, ui, testing, devops, security, ...")
+    print("    .claude/agents/[4 verifiers]        — architecture, security, quality, test")
     print("    /orchestrate, /new-spec, /implement-spec, /context-handoff commands\n")
 
 

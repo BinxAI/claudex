@@ -20,6 +20,7 @@ PRESERVE_ON_UPDATE = {
     "session/CONTEXT_SUMMARY.md",
     "session/BACKGROUND_QUEUE.md",
     "session/PARALLEL_SESSIONS.md",
+    "session/TOKEN_LOG.md",
     "feedback/VIOLATIONS_LOG.md",
     "feedback/LESSONS_LEARNED_INDEX.md",
     "feedback/PATTERN_CORRECTIONS.md",
