@@ -1,0 +1,66 @@
+# ClaudeX Verifier Role Registry
+# Verifiers run AFTER implementers to validate correctness, quality, and security.
+
+version: "1.0"
+
+roles:
+  - id: architecture-verifier
+    name: Architecture Verifier
+    description: Checks layer boundaries, dependency direction, circular imports, SRP violations
+    runs_after:
+      - any implementer
+    checks:
+      - Layer violations (core importing from api, db importing from workers, etc.)
+      - Circular dependency detection
+      - Single Responsibility Principle adherence
+      - Interface segregation compliance
+    output: "verification/architecture-report.md"
+    blocks_merge_on: critical
+
+  - id: security-verifier
+    name: Security Verifier
+    description: OWASP Top 10 scan, hardcoded secrets detection, input validation gaps
+    runs_after:
+      - api-engineer
+      - security-engineer
+      - database-engineer
+    checks:
+      - SQL injection (parameterized queries check)
+      - XSS vulnerabilities in any rendered output
+      - Hardcoded secrets or credentials
+      - Missing input validation at API boundaries
+      - Authentication bypass risks
+      - Insecure direct object references
+    output: "verification/security-report.md"
+    blocks_merge_on: any
+
+  - id: quality-verifier
+    name: Quality Verifier
+    description: File size limits, method complexity, naming conventions, lint compliance
+    runs_after:
+      - any implementer
+    checks:
+      - File size ≤500 lines (≤300 preferred)
+      - Method length ≤50 lines (≤30 preferred)
+      - Naming convention compliance (see NAMING_CONVENTIONS.md)
+      - Ruff lint and format passing
+      - No bare except clauses
+      - No dead code (unreachable branches)
+    output: "verification/quality-report.md"
+    blocks_merge_on: critical
+
+  - id: test-verifier
+    name: Test Verifier
+    description: Coverage analysis, test quality, missing edge cases, flaky test detection
+    runs_after:
+      - testing-engineer
+      - any implementer
+    checks:
+      - Core layer coverage ≥95%
+      - API layer coverage ≥80%
+      - All tests passing (zero failures, zero errors)
+      - AAA pattern compliance in test structure
+      - Edge cases covered (None, empty, boundary values)
+      - No skipped tests without justification
+    output: "verification/test-report.md"
+    blocks_merge_on: any

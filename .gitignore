@@ -62,3 +62,9 @@ TASK_PROGRESS.md
 CONTEXT_SUMMARY.md
 VALIDATION_STATE.md
 .parallel_*.txt
+
+# Exception: session template files in the package must be versioned
+!claudex/templates/project/session/CURRENT_TASK.md
+!claudex/templates/project/session/TASK_PROGRESS.md
+!claudex/templates/project/session/CONTEXT_SUMMARY.md
+!claudex/templates/project/session/VALIDATION_STATE.md

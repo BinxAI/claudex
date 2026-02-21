@@ -1,0 +1,131 @@
+# ClaudeX Implementer Role Registry
+# Used by claudex init --multi-agent to generate agent files in .claude/agents/
+
+version: "1.0"
+
+roles:
+  - id: api-engineer
+    name: API Engineer
+    description: FastAPI/REST endpoints, request validation, response schemas, middleware
+    focus:
+      - REST and GraphQL endpoint design
+      - Request/response validation with Pydantic
+      - Authentication and authorization middleware
+      - API versioning and backward compatibility
+    files_owned:
+      - "src/api/**"
+      - "src/routers/**"
+    must_not_touch:
+      - "src/core/**"
+      - "src/db/**"
+
+  - id: database-engineer
+    name: Database Engineer
+    description: SQLAlchemy ORM models, Alembic migrations, repository implementations, query optimization
+    focus:
+      - Database schema design and normalization
+      - ORM model definitions and relationships
+      - Alembic migration scripts
+      - Repository pattern implementation
+      - Query optimization and indexing
+    files_owned:
+      - "src/db/**"
+      - "alembic/**"
+    must_not_touch:
+      - "src/api/**"
+      - "src/core/**"
+
+  - id: ui-designer
+    name: UI Designer
+    description: React/Next.js components, Tailwind styling, responsive layouts, accessibility
+    focus:
+      - Component architecture and composition
+      - Responsive design and mobile-first layouts
+      - Accessibility (WCAG 2.1 AA)
+      - State management (React hooks, Zustand)
+      - Design system and Tailwind utility classes
+    files_owned:
+      - "src/components/**"
+      - "src/pages/**"
+      - "src/styles/**"
+    must_not_touch:
+      - "src/api/**"
+      - "src/db/**"
+
+  - id: testing-engineer
+    name: Testing Engineer
+    description: Unit tests, integration tests, E2E tests, test fixtures, coverage reporting
+    focus:
+      - TDD workflow (red → green → refactor)
+      - pytest unit and integration tests
+      - Test fixture design and factories
+      - Mock strategies for external dependencies
+      - Coverage analysis and gap identification
+    files_owned:
+      - "tests/**"
+    must_not_touch: []
+
+  - id: devops-engineer
+    name: DevOps Engineer
+    description: CI/CD pipelines, Docker, Kubernetes, deployment automation, monitoring
+    focus:
+      - GitHub Actions workflow design
+      - Docker and docker-compose configuration
+      - Cloud infrastructure (AWS/GCP/Azure)
+      - Monitoring and alerting setup
+      - Secret management and environment configuration
+    files_owned:
+      - ".github/workflows/**"
+      - "docker/**"
+      - "k8s/**"
+      - "infra/**"
+    must_not_touch:
+      - "src/**"
+      - "tests/**"
+
+  - id: security-engineer
+    name: Security Engineer
+    description: Authentication, authorization, OWASP hardening, secret scanning, audit logging
+    focus:
+      - Authentication flows (JWT, OAuth2, API keys)
+      - Authorization and RBAC implementation
+      - OWASP Top 10 vulnerability remediation
+      - Input validation and sanitization
+      - Audit logging and compliance
+    files_owned:
+      - "src/auth/**"
+      - "src/security/**"
+    must_not_touch: []
+
+  - id: data-engineer
+    name: Data Engineer
+    description: ETL pipelines, data processing workers, analytics schemas, data quality
+    focus:
+      - ETL/ELT pipeline design
+      - Background data processing tasks
+      - Analytics and reporting schemas
+      - Data quality validation
+      - Stream processing integration
+    files_owned:
+      - "src/workers/**"
+      - "src/pipelines/**"
+      - "src/analytics/**"
+    must_not_touch:
+      - "src/api/**"
+      - "src/core/**"
+
+  - id: docs-engineer
+    name: Documentation Engineer
+    description: API docs, README, architecture docs, ADRs, user guides, code comments
+    focus:
+      - OpenAPI/Swagger documentation
+      - README and getting-started guides
+      - Architecture Decision Records (ADRs)
+      - Code documentation and docstrings
+      - Changelog and release notes
+    files_owned:
+      - "docs/**"
+      - "*.md"
+    must_not_touch:
+      - "src/**"
+      - "tests/**"

@@ -36,10 +36,12 @@ def copy_tree(
     update_mode: bool = False,
     skip_patterns: set = None,
     preserve_on_update: set = None,
+    _root_dst: Path = None,
 ) -> None:
     """Copy directory tree from templates to destination."""
     skip_patterns = skip_patterns or set()
     preserve_on_update = preserve_on_update or PRESERVE_ON_UPDATE
+    root_dst = _root_dst if _root_dst is not None else dst
 
     for item in sorted(src.iterdir()):
         dest_path = dst / item.relative_to(src)
@@ -53,7 +55,7 @@ def copy_tree(
             dest_path = dest_path.with_name(dest_path.name.replace(".template", ""))
 
         # Path traversal protection
-        if not dest_path.resolve().is_relative_to(dst.resolve()):
+        if not dest_path.resolve().is_relative_to(root_dst.resolve()):
             print(f"  ERROR: Path traversal blocked: {dest_path}")
             sys.exit(1)
 
@@ -64,12 +66,16 @@ def copy_tree(
                 dest_path.mkdir(parents=True, exist_ok=True)
             else:
                 print(f"  mkdir {dest_path}")
-            copy_tree(item, dest_path, dry_run, update_mode, skip_patterns, preserve_on_update)
+            copy_tree(
+                item, dest_path, dry_run, update_mode, skip_patterns, preserve_on_update, root_dst
+            )
 
         elif item.is_file():
-            # In update mode, preserve user-modified files
+            # In update mode, preserve user-modified files.
+            # Use root_dst (not dst) so that paths like "session/CURRENT_TASK.md"
+            # match correctly in recursive calls where dst is already "session/".
             if update_mode:
-                rel = str(dest_path.relative_to(dst)).replace("\\", "/")
+                rel = str(dest_path.relative_to(root_dst)).replace("\\", "/")
                 if any(rel.startswith(p.rstrip("/")) for p in preserve_on_update):
                     if dest_path.exists():
                         print(f"  SKIP (preserved): {dest_path.name}")
